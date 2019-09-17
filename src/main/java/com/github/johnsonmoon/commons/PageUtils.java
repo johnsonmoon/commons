@@ -1,4 +1,4 @@
-package com.github.johnsonmoon.commons.util;
+package com.github.johnsonmoon.commons;
 
 import java.util.ArrayList;
 import java.util.List;

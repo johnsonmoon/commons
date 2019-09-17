@@ -1,6 +1,5 @@
-package com.github.johnsonmoon.commons.cache;
+package com.github.johnsonmoon.commons;
 
-import com.github.johnsonmoon.commons.util.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package com.github.johnsonmoon.commons.cache;
+package com.github.johnsonmoon.commons;
 
 import org.junit.Test;
 import org.slf4j.Logger;

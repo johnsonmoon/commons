@@ -1,4 +1,4 @@
-package com.github.johnsonmoon.commons.util;
+package com.github.johnsonmoon.commons;
 
 import org.junit.Before;
 import org.junit.Test;
