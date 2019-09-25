@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Create by xuyh at 2019/9/19 15:49.
@@ -97,10 +98,25 @@ public class JdbcUtils {
      * @return result rows [{"id":1}, {"id":2}, {"id":3}, {"id":4}]
      */
     public static List<Map<String, Object>> query(Connection connection, Command command) {
-        if (connection == null || command == null || command.getSql() == null) {
-            return null;
+        List<Map<String, Object>> rows = new ArrayList<>();
+        query(connection, command, (row, number) -> rows.add(row));
+        return rows;
+    }
+
+    /**
+     * Execute query sql.
+     *
+     * @param connection         {@link Connection}
+     * @param command            {@link Command}
+     * @param resultRowProcessor {@link ResultRowProcessor}
+     * @return result row count
+     */
+    public static int query(Connection connection, Command command, ResultRowProcessor... resultRowProcessor) {
+        if (connection == null || command == null || command.getSql() == null
+                || resultRowProcessor == null || resultRowProcessor.length == 0) {
+            return 0;
         }
-        List<Map<String, Object>> dataList = new ArrayList<>();
+        AtomicInteger dataCount = new AtomicInteger(0);
         ResultSet resultSet = null;
         PreparedStatement statement = null;
         try {
@@ -116,11 +132,14 @@ public class JdbcUtils {
                 columns.add(resultSet.getMetaData().getColumnName(i + 1));
             }
             while (resultSet.next()) {
+                int currentRowNum = dataCount.incrementAndGet();
                 Map<String, Object> row = new LinkedHashMap<>();
                 for (String column : columns) {
                     row.put(column, resultSet.getObject(column));
                 }
-                dataList.add(row);
+                for (ResultRowProcessor processor : resultRowProcessor) {
+                    processor.process(row, currentRowNum);
+                }
             }
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
@@ -140,7 +159,7 @@ public class JdbcUtils {
                 }
             }
         }
-        return dataList;
+        return dataCount.get();
     }
 
     /**
@@ -312,5 +331,15 @@ public class JdbcUtils {
                     ", params=" + params +
                     '}';
         }
+    }
+
+    public static interface ResultRowProcessor {
+        /**
+         * Process row.
+         *
+         * @param row       current row data
+         * @param rowNumber current row number
+         */
+        void process(Map<String, Object> row, int rowNumber);
     }
 }

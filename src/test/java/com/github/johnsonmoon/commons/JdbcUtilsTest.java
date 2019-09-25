@@ -25,7 +25,7 @@ public class JdbcUtilsTest {
 
     @Before
     public void before() {
-        connection = JdbcUtils.connect(Driver.class.getCanonicalName(), "jdbc:mysql://127.0.0.1:3306/test_commons?useSSL=false", "root", "root");
+        connection = JdbcUtils.connect(Driver.class.getCanonicalName(), "jdbc:mysql://192.168.100.203:3306/test_commons?useSSL=false", "dbuser", "DBUser123!");
         if (connection != null) {
             Assert.assertTrue(JdbcUtils.execute(connection, CREATE_TABlE));
         }
@@ -55,6 +55,8 @@ public class JdbcUtilsTest {
             Assert.assertTrue(JdbcUtils.transaction(connection,
                     JdbcUtils.Command.build().sql("update test set description = ? where name = ?").params("abc-4", "johnson-4"),
                     JdbcUtils.Command.build().sql("update test set description = ? where name = ?").params("abc-5", "johnson-5")));
+
+            Assert.assertNotEquals(0, JdbcUtils.query(connection, JdbcUtils.buildCommand("select * from test"), (row, rowNumber) -> System.out.println(row)));
         }
     }
 
