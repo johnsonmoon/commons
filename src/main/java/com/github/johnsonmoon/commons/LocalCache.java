@@ -36,6 +36,13 @@ public class LocalCache<KEY, VALUE> {
     }
 
     /**
+     * Close the cache
+     */
+    public void close() {
+        this.shutdown.set(true);
+    }
+
+    /**
      * Set cache time for each key-value pair.
      *
      * @param cacheTimeMinutes Unit: minutes

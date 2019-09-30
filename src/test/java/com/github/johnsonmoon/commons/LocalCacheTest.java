@@ -1,5 +1,6 @@
 package com.github.johnsonmoon.commons;
 
+import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,5 +79,10 @@ public class LocalCacheTest {
         } catch (Exception e) {
             logger.debug(e.getMessage(), e);
         }
+    }
+
+    @After
+    public void after() {
+        localCache.close();
     }
 }
