@@ -129,7 +129,7 @@ public class JdbcUtils {
             resultSet = statement.executeQuery();
             List<String> columns = new ArrayList<>();
             for (int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) {
-                columns.add(resultSet.getMetaData().getColumnName(i + 1));
+                columns.add(resultSet.getMetaData().getColumnLabel(i + 1));
             }
             while (resultSet.next()) {
                 int currentRowNum = dataCount.incrementAndGet();
