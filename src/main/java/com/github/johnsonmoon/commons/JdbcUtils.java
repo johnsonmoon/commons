@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Create by xuyh at 2019/9/19 15:49.
@@ -82,12 +84,24 @@ public class JdbcUtils {
      * Execute query sql.
      *
      * @param connection {@link Connection}
-     * @param sql        Query sql statement
-     * @param params     Query sql parameters
+     * @param sql        Query sql statement : "select * from table where id = ? and name = ?"
+     * @param params     Query sql parameters : [1, "abc"]
      * @return result rows [{"id":1}, {"id":2}, {"id":3}, {"id":4}]
      */
     public static List<Map<String, Object>> query(Connection connection, String sql, Object... params) {
         return query(connection, Command.build().sql(sql).params(params));
+    }
+
+    /**
+     * Execute query sql.
+     *
+     * @param connection {@link Connection}
+     * @param sql        Query sql statement : "select * from table where id = ${id} and name = ${name}"
+     * @param params     Query sql parameters : {"id":1, "name":"abc"}
+     * @return result rows [{"id":1}, {"id":2}, {"id":3}, {"id":4}]
+     */
+    public static List<Map<String, Object>> query(Connection connection, String sql, Map<String, Object> params) {
+        return query(connection, Command.build().sql(generatePreparedSql(sql, params)).params(generatePreparedParams(sql, params)));
     }
 
     /**
@@ -166,12 +180,24 @@ public class JdbcUtils {
      * Execute update sql statement.
      *
      * @param connection {@link Connection}
-     * @param sql        Update sql statement
-     * @param params     Update sql parameters
+     * @param sql        Update sql statement : "delete from table_user where id = ?"
+     * @param params     Update sql parameters : [1]
      * @return affected rows
      */
     public static int update(Connection connection, String sql, Object... params) {
         return update(connection, Command.build().sql(sql).params(params));
+    }
+
+    /**
+     * Execute update sql statement.
+     *
+     * @param connection {@link Connection}
+     * @param sql        Update sql statement : "delete from table_user where id = ${id}"
+     * @param params     Update sql parameters : {"id":1}
+     * @return affected rows
+     */
+    public static int update(Connection connection, String sql, Map<String, Object> params) {
+        return update(connection, Command.build().sql(generatePreparedSql(sql, params)).params(generatePreparedParams(sql, params)));
     }
 
     /**
@@ -291,7 +317,20 @@ public class JdbcUtils {
      * </pre>
      */
     public static class Command {
+        /**
+         * Sql command.
+         * <pre>
+         *     "select * from table_user where id = ? or name in (?, ?)"
+         * </pre>
+         */
         private String sql;
+        /**
+         * Sql ? prepared statement parameters, orders required.
+         * <pre>
+         *     SQL: "select * from table_user where id = ? or name in (?, ?)"
+         *     params: [100, "abc", "def"]
+         * </pre>
+         */
         private List<Object> params;
 
         public static Command build() {
@@ -333,7 +372,7 @@ public class JdbcUtils {
         }
     }
 
-    public static interface ResultRowProcessor {
+    public interface ResultRowProcessor {
         /**
          * Process row.
          *
@@ -341,5 +380,28 @@ public class JdbcUtils {
          * @param rowNumber current row number
          */
         void process(Map<String, Object> row, int rowNumber);
+    }
+
+    private static final Pattern PARAM_PATTERN = Pattern.compile("\\$\\{[^\\{\\}]*\\}");
+
+    private static String generatePreparedSql(String sql, Map<String, Object> params) {
+        String preparedSql = sql;
+        Matcher settingMatcher = PARAM_PATTERN.matcher(preparedSql);
+        while (settingMatcher.find()) {
+            String group = settingMatcher.group();
+            preparedSql = preparedSql.replace(group, "?");
+        }
+        return preparedSql;
+    }
+
+    private static Object[] generatePreparedParams(String sql, Map<String, Object> params) {
+        List<Object> objects = new ArrayList<>();
+        Matcher settingMatcher = PARAM_PATTERN.matcher(sql);
+        while (settingMatcher.find()) {
+            String group = settingMatcher.group();
+            String paramKey = group.substring(2, group.length() - 1);
+            objects.add(params.getOrDefault(paramKey, null));
+        }
+        return objects.toArray();
     }
 }

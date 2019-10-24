@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,10 @@ public class JdbcUtilsTest {
             Assert.assertNotEquals(0, JdbcUtils.update(connection, "insert into test(name,description) values(?, ?)", "Johnson-3", "test-description-3"));
             Assert.assertNotEquals(0, JdbcUtils.update(connection, "insert into test(name,description) values(?, ?)", "Johnson-4", "test-description-4"));
             Assert.assertNotEquals(0, JdbcUtils.update(connection, "insert into test(name,description) values(?, ?)", "Johnson-5", "test-description-5"));
+            Map<String, Object> params = new HashMap<>();
+            params.put("name", "Johnson-6");
+            params.put("description", "test-description-6");
+            Assert.assertNotEquals(0, JdbcUtils.update(connection, "insert into test(name,description) values(${name}, ${description})", params));
 
             List<Map<String, Object>> allResults = JdbcUtils.query(connection, "select * from test");
             Assert.assertNotNull(allResults);
@@ -51,6 +56,12 @@ public class JdbcUtilsTest {
             List<Map<String, Object>> partResults = JdbcUtils.query(connection, JdbcUtils.buildCommand("select * from test where name in (?, ?, ?)", "johnson-1", "johnson-2", "johnson-3"));
             Assert.assertNotNull(partResults);
             System.out.println(partResults);
+
+            Map<String, Object> queryParam = new HashMap<>();
+            queryParam.put("name", "Johnson-6");
+            List<Map<String, Object>> results = JdbcUtils.query(connection, "select * from test where name = ${name}", queryParam);
+            Assert.assertNotNull(results);
+            System.out.println(results);
 
             Assert.assertTrue(JdbcUtils.transaction(connection,
                     JdbcUtils.Command.build().sql("update test set description = ? where name = ?").params("abc-4", "johnson-4"),
