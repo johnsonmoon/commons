@@ -3,9 +3,8 @@ package com.github.johnsonmoon.commons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.PreDestroy;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,6 +37,7 @@ public class LocalCache<KEY, VALUE> {
     /**
      * Close the cache
      */
+    @PreDestroy
     public void close() {
         this.shutdown.set(true);
     }
@@ -142,6 +142,28 @@ public class LocalCache<KEY, VALUE> {
      */
     public boolean containsKey(KEY key) {
         return cacheMap.containsKey(key);
+    }
+
+    /**
+     * Get key set from local cache.
+     *
+     * @return {@link Set}
+     */
+    public Set<KEY> keySet() {
+        return cacheMap.keySet();
+    }
+
+    /**
+     * Get value collection from local cache.
+     *
+     * @return {@link Collection}
+     */
+    public Collection<VALUE> values() {
+        List<VALUE> values = new ArrayList<>();
+        for (CacheModel cacheModel : cacheMap.values()) {
+            values.add(cacheModel.getObject());
+        }
+        return values;
     }
 
     private void initCacheCleanTask(String name) {

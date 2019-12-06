@@ -1,6 +1,7 @@
 package com.github.johnsonmoon.commons;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,13 @@ public class LocalCacheTest {
             new LocalCache<String, String>("test-local-cache")
                     .cacheTimeSeconds(30)
                     .cacheAcquireOperation(key -> key + "-" + System.currentTimeMillis());
+
+    @Before
+    public void setup() {
+        for (int i = 0; i < 100; i++) {
+            localCache.put("key_" + i, "value_" + i);
+        }
+    }
 
     @Test
     public void test() {
@@ -71,6 +79,16 @@ public class LocalCacheTest {
         for (int i = 0; i < 10000; i++) {
             System.out.println(localCache.get(i + "-name"));
         }
+    }
+
+    @Test
+    public void keySetTest() {
+        localCache.keySet().forEach(System.out::println);
+    }
+
+    @Test
+    public void valuesTest() {
+        localCache.values().forEach(System.out::println);
     }
 
     private void sleep(long timeMillis) {
