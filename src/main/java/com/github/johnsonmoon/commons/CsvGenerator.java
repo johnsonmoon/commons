@@ -38,7 +38,7 @@ public class CsvGenerator {
             writer = new BufferedWriter(new FileWriter(file, true));
             for (int i = 0; i < lines; i++) {
                 if (i % 1000 == 0) {
-                    System.out.println("Line: " + i + ", Size: " + formatFileSize(file));
+                    System.out.println(String.format("Line: %-12s, Size: %s", i, formatFileSize(file)));
                 }
                 StringBuilder stringBuilder = new StringBuilder();
                 for (int j = 0; j < columns; j++) {
@@ -57,13 +57,13 @@ public class CsvGenerator {
     private static String formatFileSize(File file) {
         long length = file.length();
         if (length >= 1024 && length < 1024 * 1024) {
-            return String.format("%s KB", length / 1024);
+            return String.format("%-12s KB", length / 1024 + "." + length % 1024);
         } else if (length >= 1024 * 1024 && length < 1024 * 1024 * 1024) {
-            return String.format("%s MB", length / (1024 * 1024));
+            return String.format("%-12s MB", length / (1024 * 1024) + "." + length % (1024 * 1024));
         } else if (length >= 1024 * 1024 * 1024) {
-            return String.format("%s GB", length / (1024 * 1024 * 1024));
+            return String.format("%-12s GB", length / (1024 * 1024 * 1024) + "." + length % (1024 * 1024 * 1024));
         } else {
-            return String.format("%s B", length);
+            return String.format("%-12s B", length);
         }
     }
 }
